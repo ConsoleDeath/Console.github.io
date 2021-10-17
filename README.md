@@ -1,2 +1,2 @@
 # Console.github.io
-node index.js
+КОД СМЭРТИ
