@@ -10,6 +10,33 @@ client.once('ready', () => {
     console.log('Ready!');
 });
 
+const config = {
+  voice: "873175412501528626",
+  parent: "865590951765082112"
+}
+//Вместо инстансов GuildMember, используются инстансы VoiceState, что равносильно member.voice
+client.on("voiceStateUpdate", (oldState, newState) => {
+  if(!oldState.guild.channels.cache.has(config.voice) || !oldState.guild.channels.cache.has(config.voice)) throw Error("Не указано либо айди канала, либо айди категории")
+  if(newState.channelID === config.voice) {
+    newState.guild.channels.create("🔒Private room", {
+      type: "VOICE",
+      parent: config.parent,
+      permissionOverwrites: [
+        {
+           id: newState.guild.id, //Права для роли @everyone
+           allow: ["VIEW_CHANNEL"]
+        },
+        {
+          id: newState.member.id, //Права для создателя канала
+          allow: ["VIEW_CHANNEL", "MANAGE_CHANNELS"]
+        }
+      ]
+    }).then(ch => newState.setChannel(ch))
+  }
+  //удаление канала, если в нем больше не осталось человек
+  if(oldState.channel && !oldState.channel.members.size && oldState.channel.parentID === config.parent && oldState.channelID !== config.voice) oldState.channel.delete();
+})
+
 const commandFiles = fs.readdirSync('./commandName').filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
